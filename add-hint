@@ -76,7 +76,7 @@ addhint () {
                 echo -e "$FILE \033[1;91m->\033[0m \033[1;37m$NEWFILENAME\033[0m"
             fi
             # RENAMING THE FILE TO NEW NAME
-            # mv $INTERACTIVE "$FILE" $NEWFILENAME
+            mv $INTERACTIVE "$FILE" $NEWFILENAME
         done
 
     else
