@@ -1,0 +1,167 @@
+#!/bin/bash
+###################### 1. GLOBAL VARIBALES ###################
+# DEFAULT DIRECTORY
+CWD=$(cd -P -- "$(dirname -- "$0")" && pwd -P) #CWD
+
+# CURRENT SCRIPT NAME
+SCRIPTNAME=$(basename $0)
+
+# DEFAULT ARGUMENTS TO THE COMMAND
+OPTIONS=""
+INTERACTIVE=""
+
+# TYPE - FILE OR DIRECTORY
+TYPE=""
+
+# MINIMUM DEPTH
+MAXDEPTH="-maxdepth 1"
+ 
+ 
+###################### 2. FUNCTIONS DEFINITION ###################
+# USAGE FUNCTION - MANUAL PAGE
+usage() {
+    echo "Usage: $SCRIPTNAME [options] <pattern> <hint> [directories]" 
+    echo
+    echo "Performs a batch hint adding to the files or directories by adding a hint to the end of their names, based on a glob wildcard (GLOBBING). If one or more directories are specified, batch hint adding will operate to files inside those directories; otherwise it will operate on all files matching the wildcard in the cwd."
+    echo
+    echo "<pattern> is an glob wildcard as used by find."
+    echo
+    echo "Options can be one or more of:"
+    echo
+    echo "  -d | --dirs-only        Limit the hint adding to directories only."
+    echo "  -f | --files-only       Limit the hint adding to regular files only."
+    echo "  -h | --help             Print this usage message and exit"
+    echo "  -i | --interactive      Do not automatically add hints; instead, provide a list of original and, 
+                          modified names and ask the user to confirm the hint adding before it happens."
+    echo "  -r | --recursive        Recursively descend directories; otherwise,
+                          processes only files in the directories specified, or cwd."
+}
+
+# ERROR FUNCTION
+errorMessage() {
+    echo -e "$SCRIPTNAME: $1"
+}
+
+# RENAMING THE RESULTS USING mv -n "$CURFILE" $NEWFILE
+addhint () {
+    for DIR in "${DIRS[@]}" ; do
+
+        # EXIT IF ONE OF THE DIRECTORY PASSED DOESN'T EXIST
+        if [ ! -d "$DIR" ]; then
+            errorMessage "DIRECTORY NOT FOUND: \033[0;31m$DIR\033[0m\n"
+            usage
+            exit 1
+        fi
+
+        # SET CORRECT DIRECTORIES TO RENAME THROUGH
+        CORRECTDIRS+=($DIR)
+    done
+
+    echo -e "\nSTARTING RENAMING IN ${CORRECTDIRS[@]} DIRECTOR(Y-IES)"
+
+    FILES+=($(find ${CORRECTDIRS[@]} $MAXDEPTH $TYPE -name "$PATTERN"))
+    echo -e "\nFILES TO BE RENAMED: (${#FILES[@]})\n${FILES[@]}\n"
+
+    if [[ "${#FILES[@]}" -gt 0 ]] ; then
+
+        # RENAMING ONE BY ONE
+        for FILE in "${FILES[@]}" ; do
+
+            # GENERATING A NEW NAME BASED ON OLD NAME
+            NEWFILENAME="$FILE-$HINT"
+
+            if [[ "$FILE" != "$NEWFILENAME" ]] ; then
+                echo "$FILE -> $NEWFILENAME"
+            fi
+            # RENAMING THE FILE TO NEW NAME
+            # mv $INTERACTIVE "$FILE" $NEWFILENAME
+        done
+
+    else
+        errorMessage "NOTHING FOUND, TRY AGAIN!: \033[0;31m$1\033[0m\n"
+        usage
+        exit 0
+    fi
+
+    echo -e "\nFINISHED RENAMING."
+}
+
+###################### 3. PROCESS OPTIONS ###################
+# IF NO ARGUMENTS SPECIFIED - DISPLAY ERROR, USAGE AND EXIT
+if [ $# -eq 0 ] ; then
+    errorMessage "You must provide an option at least!\n"
+    usage
+    exit 1
+fi
+
+# IF MORE THAN 0 ARGS
+while [ $# -gt 0 ] ; do
+
+    case "$1" in
+
+        # PRINT HELP (USAGE) MESSAGE
+        -h | --help) 
+            usage
+            exit 0
+            ;;
+
+        # DIRECTORIES ONLY
+        -d | --dirs-only)
+            TYPE="-type d"
+            ;;
+
+        # FILES ONLY
+        -f | --files-only) 
+            TYPE="-type f"
+            ;;
+        
+        # INTERACTIVE RENAMING
+        -i | --interactive) 
+            INTERACTIVE="-i"
+            ;;
+
+        # RENAMING RECURSIVELY
+        -r | --recursive)
+            MAXDEPTH=""
+            ;;
+
+        # WHEN THE SPECIFIED OPTION IS NOT AVAILABLE
+        -*) errorMessage "INVALID OPTION SPECIFIED: \033[0;31m$1\033[0m\n"
+            usage
+            exit 1
+            ;;
+
+        # DEFAULT CASE
+        *) break
+            ;;
+    esac
+
+    # SHIFT TO THE NEXT OPTION
+    shift
+done
+
+###################### 4. THE BODY ###################
+# PATTERN TO BE FOUND = $1 AFTER PROCESSING OPTIONS
+PATTERN=$1
+
+# HINT FOR THE NAME - IF THE HINT IS NOT A FILE OR DIRECTORY, DON'T PROCEED
+if [[ -d $2 || -f $2 ]]; then
+    errorMessage "INVALID HINT SPECIFIED: \033[0;31m$2\033[0m\n"
+    usage
+    exit 1
+else
+    HINT=$2
+fi
+
+# CHECKING FOR LOCATION OF THE RENAMING
+if [[ $# -lt 3 ]] ; then 
+    DIRS+=($CWD)
+
+else
+    DIRS=( "${@:3}" )
+fi
+
+# CALLING THE FUNCTION TO RENAME AND LIST ALL THE DIRECTORY
+echo "NAME WITH PATTERN: $PATTERN"
+echo "RENAME WITH HINT: $HINT"
+addhint && ls -l ${CORRECTDIRS[@]}
