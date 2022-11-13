@@ -20,13 +20,13 @@ MAXDEPTH="-maxdepth 1"
 ###################### 2. FUNCTIONS DEFINITION ###################
 # USAGE FUNCTION - MANUAL PAGE
 usage() {
-    echo "Usage: $SCRIPTNAME [options] <pattern> <hint> [directories]" 
+    echo -e "\033[46m\033[1;37mUsage: $SCRIPTNAME [options] <pattern> <hint> [directories]\033[0m" 
     echo
     echo "Performs a batch hint adding to the files or directories by adding a hint to the end of their names, based on a glob wildcard (GLOBBING). If one or more directories are specified, batch hint adding will operate to files inside those directories; otherwise it will operate on all files matching the wildcard in the cwd."
     echo
-    echo "<pattern> is an glob wildcard as used by find, <hint> is any specified hint"
-    echo
-    echo "Options can be one or more of:"
+    echo -e "\033[1;97m<pattern> is an glob wildcard as used by find, <hint> is any specified hint\033[0m"
+    echo    
+    echo -e "\033[4;33mOptions can be one or more of:\033[0m"
     echo
     echo "  -d | --dirs-only        Limit the hint adding to directories only."
     echo "  -f | --files-only       Limit the hint adding to regular files only."
@@ -39,7 +39,7 @@ usage() {
 
 # ERROR FUNCTION
 errorMessage() {
-    echo -e "$SCRIPTNAME: $1"
+    echo -e "\n\033[1;91m$SCRIPTNAME: $1\033[0m"
 }
 
 # RENAMING THE RESULTS USING mv -n "$CURFILE" $NEWFILE
@@ -57,10 +57,10 @@ addhint () {
         CORRECTDIRS+=($DIR)
     done
 
-    echo -e "\nSTARTING RENAMING IN ${CORRECTDIRS[@]} DIRECTOR(Y-IES)"
+    echo -e "\n\033[0;30m\033[43mSTARTING RENAMING IN ${CORRECTDIRS[@]} DIRECTOR(Y-IES)\033[0m"
 
     FILES+=($(find ${CORRECTDIRS[@]} $MAXDEPTH $TYPE -name "$PATTERN"))
-    echo -e "\nFILES TO BE RENAMED: (${#FILES[@]})\n${FILES[@]}\n"
+    echo -e "\n\033[1;37mFILES TO BE RENAMED: (${#FILES[@]})\033[0m\n\033[0;96m${FILES[@]}\n\033[0m"
 
     if [[ "${#FILES[@]}" -gt 0 ]] ; then
 
@@ -68,28 +68,30 @@ addhint () {
         for FILE in "${FILES[@]}" ; do
 
             # GENERATING A NEW NAME BASED ON OLD NAME
-            NEWFILENAME="$FILE-$HINT"
+            if [[ $FILE == *$HINT ]] ; then
+                echo -e "\033[0;31mHINT CAN'T BE ADDED ON $FILE, IT WAS ALREADY EXISTING\033[0m"
 
-            if [[ "$FILE" != "$NEWFILENAME" ]] ; then
-                echo "$FILE -> $NEWFILENAME"
+            elif [[ "$FILE" != "$NEWFILENAME" ]] ; then
+                NEWFILENAME="$FILE-$HINT"
+                echo -e "$FILE \033[1;91m->\033[0m \033[1;37m$NEWFILENAME\033[0m"
             fi
             # RENAMING THE FILE TO NEW NAME
             # mv $INTERACTIVE "$FILE" $NEWFILENAME
         done
 
     else
-        errorMessage "NOTHING FOUND, TRY AGAIN!: \033[0;31m$1\033[0m\n"
+        errorMessage "\033[42mNOTHING FOUND, TRY AGAIN!:\033[0m \033[0;31m$1\033[0m\n"
         usage
         exit 0
     fi
 
-    echo -e "\nFINISHED RENAMING."
+    echo -e "\n\033[0;37m\033[42mFINISHED RENAMING.\033[0m ✅ "
 }
 
 ###################### 3. PROCESS OPTIONS ###################
 # IF NO ARGUMENTS SPECIFIED - DISPLAY ERROR, USAGE AND EXIT
 if [ $# -eq 0 ] ; then
-    errorMessage "You must provide an option at least!\n"
+    errorMessage "YOU MUST PROVIDE AN OPTION AT LEAST!\n"
     usage
     exit 1
 fi
@@ -126,7 +128,7 @@ while [ $# -gt 0 ] ; do
             ;;
 
         # WHEN THE SPECIFIED OPTION IS NOT AVAILABLE
-        -*) errorMessage "INVALID OPTION SPECIFIED: \033[0;31m$1\033[0m\n"
+        -*) errorMessage "INVALID OPTION SPECIFIED: \033[43m$1\033[0m\n"
             usage
             exit 1
             ;;
@@ -162,6 +164,9 @@ else
 fi
 
 # CALLING THE FUNCTION TO RENAME AND LIST ALL THE DIRECTORY
-echo "NAME WITH PATTERN: $PATTERN"
-echo "RENAME WITH HINT: $HINT"
-addhint && ls -l ${CORRECTDIRS[@]}
+echo -e "\nNAME WITH PATTERN: \033[0;96m$PATTERN\033[0m"
+echo -e "RENAME WITH HINT: \033[0;96m$HINT\033[0m"
+addhint 
+
+echo -e "\n\033[1;34m\033[4;34mALL FILES IN THESE DIRECTORIES:\033[0m\n"
+ls -l --color=auto ${CORRECTDIRS[@]}
