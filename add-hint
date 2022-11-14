@@ -16,7 +16,7 @@ TYPE=""
 # MINIMUM DEPTH
 MAXDEPTH="-maxdepth 1"
  
- 
+
 ###################### 2. FUNCTIONS DEFINITION ###################
 # USAGE FUNCTION - MANUAL PAGE
 usage() {
