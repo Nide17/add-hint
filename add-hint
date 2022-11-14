@@ -1,7 +1,7 @@
 #!/bin/bash
 ###################### 1. GLOBAL VARIBALES ###################
 # DEFAULT DIRECTORY
-CWD=$(cd -P -- "$(dirname -- "$0")" && pwd -P) #CWD
+CWD=$(pwd -P)
 
 # CURRENT SCRIPT NAME
 SCRIPTNAME=$(basename $0)
@@ -58,8 +58,19 @@ addhint () {
         CORRECTDIRS+=($DIR)
     done
 
+    if [[ -z $PATTERN ]] ; then
+        errorMessage "\033[43mPATTERN IS REQUIRED\033[0m "
+        usage
+        exit 1
+        
+    elif [[ -z $HINT ]] ; then
+        errorMessage "\033[43mHINT IS REQUIRED\033[0m "
+        usage
+        exit 1
 
-    if [[ -n $PATTERN || -n $HINT ]] ; then
+        # PATTERN AND HINT ARE SPECIFIED 
+
+    else
 
         echo -e "\n\033[0;30m\033[43mSTARTING RENAMING IN ${CORRECTDIRS[@]} DIRECTOR(Y-IES)\033[0m"
 
@@ -73,14 +84,15 @@ addhint () {
 
                 # GENERATING A NEW NAME BASED ON OLD NAME
                 if [[ $FILE == *$HINT ]] ; then
-                    echo -e "\033[0;31mHINT CAN'T BE ADDED ON $FILE, IT WAS ALREADY EXISTING\033[0m"
+                    echo -e "\033[0;31mHINT CAN'T BE ADDED ON $FILE, HINT WAS ALREADY EXISTING\033[0m"
 
                 elif [[ "$FILE" != "$NEWFILENAME" ]] ; then
                     NEWFILENAME="$FILE-$HINT"
                     echo -e "$FILE \033[1;91m->\033[0m \033[1;37m$NEWFILENAME\033[0m"
+
+                    # RENAMING THE FILE TO NEW NAME
+                    mv $INTERACTIVE "$FILE" $NEWFILENAME
                 fi
-                # RENAMING THE FILE TO NEW NAME
-                mv $INTERACTIVE "$FILE" $NEWFILENAME
             done
 
         else
@@ -90,11 +102,6 @@ addhint () {
         fi
 
         echo -e "\n\033[0;37m\033[42mFINISHED RENAMING.\033[0m ✅"
-    
-    else
-        errorMessage "\033[42mPATTERN AND HINT ARE REQUIRED:\033[0m \033[0;31m$1\033[0m\n"
-        usage
-        exit 1
     fi    
 
     
