@@ -1,0 +1,61 @@
+#!/bin/bash
+
+tests_total=0
+tests_passed=0
+
+# FUNCTION THAT PERFORM A SINGLE TEST
+test_addhint_once () {
+
+    ((tests_total++))
+
+    add__hint=${wd}/add-hint
+    hint_output="${wd}/hint.output"
+
+    # a) CREATE A TEMPORARY DIRECTORY
+    TEMPD=$(mktemp -d -p .)
+
+    # b) POPULATE IT WITH SEVERAL FILES OF VARIOUS NAMES: 5 FILES
+    cd $TEMPD
+
+    for i in $(seq 5) ; do
+        touch file$i
+    done
+
+    # c) RUN add-hint USING OPTIONS PASSED IN FROM A HIHER-LEVEL CALLER 
+    # AND REDIRECT OUTPUT INTO THE FILE hint_output - NOTE: PUT ARGS INSIDE ""  TO BE NOT EXPANDED
+    $add__hint "$1" "$2" &> "$hint_output"
+
+    # d) COMPARE THE RESULTS OF THE DIRECTORY WITH A LIST OF EXPECTED RESULTS 
+    for file in $3 ; do
+
+        if [ ! -f $file ] ; then
+            # file is not found, but was expected
+            echo ERROR: Expected to find file $file inside $TEMPD on test $tests_total
+            exit 1
+        fi
+        
+    done
+    ((tests_passed++))
+
+    # e) DELETE TEMPORARY DIRECTORY AND THE OUTPUT FILE
+    # STEP OUT OF THE DIRECTORY FIRST TO BE ABLE TO DELETE IT
+    cd ..  
+    rm -rf "$TEMPD"
+    rm -f "$hint_output"
+}
+
+
+# FUNCTION THAT PERFORMS ACTUAL MULTIPLE TESTS
+test_addhint () {
+    echo -e "\nBEGINNING TESTS...\n"
+
+    test_addhint_once file2 RW "file2-RW file1 file3 file4 file5"
+    test_addhint_once "file*" RW "file1-RW file2-RW file3-RW file4-RW file5-RW"
+
+    echo "RESULTS"
+    echo "======="
+    echo -e "PASSED $tests_passed OUT OF $tests_total TEST CASES"
+}
+
+# CALLING THE FUNCTION TO BEGIN THE TESTS
+test_addhint
