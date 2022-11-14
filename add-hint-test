@@ -1,0 +1,91 @@
+#!/bin/bash
+# & means both standard output (1>) and standard error(2>).
+
+set -x # un-comment to see what's going on when you run the script
+
+# golden_add_hint=${topdir}/add-hint
+student_add_hint="${workdir}/add-hint"
+
+tests_total=0
+tests_passed=0
+
+# Create a temporary directory and store its name in a variable.
+# a)create a temporary directory;
+TEMPD=$(mktemp -d)
+
+
+
+# b) populate it with several files of various names; 10 files
+cd $TEMPD
+for i in {1..10}; do mktemp File$i.XXX; done
+ls -l
+
+# Exit if the temp directory wasn't created successfully.
+if [ ! -e "$TEMPD" ]; then
+    >&2 echo "Failed to create temp directory"
+    exit 1
+fi
+
+
+
+# c) run add-hint on temp directory using options passed in from a higher-level caller;
+# using as arguments the $@ args supplied to this function.
+
+
+test_addhint() {
+
+    ((tests_total++))
+    golden_output="${workdir}/add_hint.golden"
+    student_output="${workdir}/add_hint-${tests_total}.out"
+
+    echo $@
+    $golden_add_hint "$@" &> "$golden_output"
+    gold_exit=$?
+
+    if [ $gold_exit -ne 0 ] ; then
+        echo "TEST ERROR: golden_add_hint exited with code $gold_exit on test $tests_total"
+        exit 1
+    fi
+
+    $student_add_hint "$@" &> "$student_output" 
+    stu_exit=$?
+
+    if [ $stu_exit -ne 0 ] ; then
+        echo "  failed test case $tests_total (unexpected exit code $stu_exit)"
+    elif diff -q "$golden_output" "$student_output" &> /dev/null ; then
+        ((tests_passed++))
+    else
+        echo "  failed test case $tests_total"
+    fi
+
+    # no sense wasting the disk space
+    rm -f "$golden_output"
+}
+
+# d) compare the results of the directory with a list of expected results;
+
+
+
+
+echo "Beginning tests..."
+
+cd "$TEMPD"
+# test_addhint -h
+test_addhint -f -r -i "f*" nide  # -> Add hint: nide to matching files in  ../$TEMPD
+test_addhint -f "C*" nide $TEMPD/  # -> Add hint: nide  to matching files in ../$TEMPD
+test_addhint -f "*" nide $TEMPD/  # -> Add hint: nide  to all files in  ../$TEMPD
+test_addhint -f -r -i  nide ../$TEMPD  # -> NOTHING FOUND 
+test_addhint -f -r -i  "C*" P $TEMPD/Cobra-nide-nide-nide   # -> DIRECTORY NOT EXIST
+test_addhint -f -r -i  nide ../$TEMPD: INVALID HINT SPECIFIED
+test_addhint -f "re*" nidePar  # -> Add nidePar to matching files in CWD
+
+
+# Make sure the temp directory gets removed on script exit.
+trap "exit 1"           HUP INT PIPE QUIT TERM
+# e) delete the temporary directory.
+trap 'rm -rf "$TEMPD"'  EXIT
+
+
+echo "Results"
+echo "======="
+echo "Passed $tests_passed out of $tests_total test cases"
