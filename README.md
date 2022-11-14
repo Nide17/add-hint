@@ -10,7 +10,7 @@ __USAGE__: add-hint - Performs batch hint adding to the files or directories
     
 Performs a batch hint adding to the files or directories by adding a hint to the end of their names, based on a glob wildcard (GLOBBING). If one or more directories are specified, batch hint adding will operate to files inside those directories; otherwise it will operate on all files matching the wildcard in the cwd.
     
- __<pattern>__ is an glob wildcard as used by find.
+ __<pattern>__ is an glob wildcard as used by find, <hint> is any specified hint.
     
 __Options can be one or more of:__
     
@@ -32,4 +32,4 @@ __Options can be one or more of:__
     
  __DATE__
     
- November 13, 2022" 
+ November 14, 2022" 
