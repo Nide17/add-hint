@@ -3,14 +3,14 @@
 __USAGE__: add-hint - Performs batch hint adding to the files or directories
 
  __SYNOPSIS__
- 
- __add-hint [options] (<pattern>) <hint> [directories]__
+
+ __add-hint [options] < pattern > < hint > [directories]__
     
  __DESCRIPTION__
     
 Performs a batch hint adding to the files or directories by adding a hint to the end of their names, based on a glob wildcard (GLOBBING). If one or more directories are specified, batch hint adding will operate to files inside those directories; otherwise it will operate on all files matching the wildcard in the cwd.
     
- __<pattern>__ is an glob wildcard as used by find.
+ __< pattern >__ is an glob wildcard as used by find, <hint> is any specified hint.
     
 __Options can be one or more of:__
     
@@ -26,10 +26,16 @@ __Options can be one or more of:__
 &nbsp; -r | --recursive          Recursively descend directories; otherwise,
                                  processes only files in the directories specified, or cwd.
     
+__IMPORTANCE__
+Someone may need to use when there is a need of adding a particular hint to the end of one or multiple files or directories to make them more rememberable, avoiding naming confusion, directing others who may want to use them in the future and easy for searching them. In addition, 
+__TESTING__
+
+ 
+    
  __AUTHOR__
     
  Written by parmenin (Niyomwungeri Parmenide ISHIMWE) at CMU-Africa - MSIT 
     
  __DATE__
     
- November 13, 2022" 
+ November 14, 2022" 
