@@ -4,7 +4,7 @@ __USAGE__: add-hint - Performs batch hint adding to the files or directories
 
  __SYNOPSIS__
  
- __add-hint [options] <pattern> <hint> [directories]__
+ __add-hint [options] (<pattern>) <hint> [directories]__
     
  __DESCRIPTION__
     
