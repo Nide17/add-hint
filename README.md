@@ -4,7 +4,7 @@ __USAGE__: add-hint - Performs batch hint adding to the files or directories
 
  __SYNOPSIS__
  
- __add-hint [options] <pattern> <hint> [directories]__
+ __add-hint [options] < pattern > < hint > [directories]__
     
  __DESCRIPTION__
     
@@ -25,6 +25,12 @@ __Options can be one or more of:__
     
 &nbsp; -r | --recursive          Recursively descend directories; otherwise,
                                  processes only files in the directories specified, or cwd.
+    
+__IMPORTANCE__
+Someone may need to use when there is a need of adding a particular hint to the end of one or multiple files or directories to make them more rememberable, avoiding naming confusion, directing others who may want to use them in the future and easy for searching them. In addition, 
+__TESTING__
+
+ 
     
  __AUTHOR__
     
