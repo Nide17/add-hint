@@ -98,7 +98,7 @@ addhint () {
         else
             errorMessage "\033[42mNOTHING FOUND, TRY AGAIN!:\033[0m \033[0;31m$1\033[0m\n"
             usage
-            exit 0
+            exit 1
         fi
 
         echo -e "\n\033[0;37m\033[42mFINISHED RENAMING.\033[0m ✅"

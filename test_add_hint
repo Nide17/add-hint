@@ -8,6 +8,7 @@ test_addhint_once () {
 
     ((tests_total++))
 
+    # THE SCRIPT MUST BE INSIDE THE $wd DIRECTORY
     add__hint=${wd}/add-hint
     hint_output="${wd}/hint.output"
 
@@ -45,12 +46,84 @@ test_addhint_once () {
 }
 
 
+# CHECKING THE EXIT ERROR CODES
+check_error_exit () {
+    hint_output_error="${wd}/hint_error.output"
+    ((tests_total++))
+
+    $add__hint "$@" &> /dev/null
+    if [ $? -ne 0 ] ; then
+        ((tests_passed++))
+    else
+        echo "  FAILED TEST CASE $tests_total"
+    fi
+} 
+
+check_usage() {
+
+    exp_exit=$1
+    shift
+
+    ((tests_total++))
+
+    output="${wd}/add_hint-${tests_total}.out"
+
+    $add__hint "$@" &> /dev/null
+    act_exit=$?
+
+    errs=0
+
+    if [ $act_exit -ne $exp_exit ] ; then
+        ((errs++))
+        echo "usage err11"
+    fi
+
+    if ! grep -qE '*Usage: add-hint' "$output" &> /dev/null ; then
+        ((errs++))
+    fi
+
+    if [ $errs -eq 0 ] ; then
+        ((tests_passed++))
+    else
+        echo "  failed test case $tests_total"
+    fi
+}
+
+
 # FUNCTION THAT PERFORMS ACTUAL MULTIPLE TESTS
 test_addhint () {
     echo -e "\nBEGINNING TESTS...\n"
 
     test_addhint_once file2 RW "file2-RW file1 file3 file4 file5"
     test_addhint_once "file*" RW "file1-RW file2-RW file3-RW file4-RW file5-RW"
+
+
+    # ILLEGAL OPTION = INVALID OPTION SPECIFIED: -g
+    check_error_exit -g
+
+    # NO OPTION AT ALL = YOU MUST PROVIDE AN OPTION, PATTERN, AND A HINT!
+     check_error_exit
+
+    # ONE OPTION ONLY = PATTERN IS REQUIRED
+    check_error_exit -d
+
+    # OPTIONS ONLY = PATTERN IS REQUIRED
+    check_error_exit -i -f -d
+
+    # PATTERN WITHOUT HINT = HINT IS REQUIRED
+    check_error_exit "file*"
+
+    # ILLEGAL PATTERN = NOTHING FOUND, TRY AGAIN!
+    check_error_exit '[ABC' RW
+
+    # UNEXISTING DIRECTORY = DIRECTORY NOT FOUND: BBBB
+    check_error_exit "file*" RW BBBB
+
+    # CHECK USAGE MESSAGE USAGE
+    check_usage 1
+    check_usage 0 --help
+    check_usage 1 --notANoption
+    check_usage 0 -f --help
 
     echo "RESULTS"
     echo "======="
